@@ -38,7 +38,7 @@ ideal for integrating with automation systems like bots.
 
    ```bash
    cd /root/pyfail2banapi
-   poetry install
+   poetry install --only main
    ```
 
 3. **Activate the Virtual Environment**
@@ -54,7 +54,7 @@ ideal for integrating with automation systems like bots.
    Start the FastAPI application using Poetry:
 
    ```bash
-   poetry run uvicorn pyfail2banapi.app:app --host 127.0.0.1 --port 8000
+   uvicorn app:app --host 127.0.0.1 --port 8000
    ```
 
 5. **Systemd Service Configuration**
