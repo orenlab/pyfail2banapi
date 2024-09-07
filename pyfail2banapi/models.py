@@ -1,11 +1,14 @@
+from typing import List
+
 from pydantic import BaseModel
 
 
 class Fail2BanStatus(BaseModel):
     """
-    Pydantic model representing the fail2ban service status.
+    Pydantic model representing the overall status of the fail2ban service.
     """
-    status: str
+    number_of_jails: int
+    jail_list: List[str]
 
 
 class JailStatus(BaseModel):
