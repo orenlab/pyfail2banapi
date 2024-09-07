@@ -69,7 +69,7 @@ bots, enabling seamless monitoring and reporting of security metrics.
    After=network.target
 
    [Service]
-   ExecStart=/path/to/your/venv/bin/uvicorn pyfail2banapi.main:app --host 0.0.0.0 --port 8000
+   ExecStart=/path/to/your/venv/bin/uvicorn pyfail2banapi.main:app --host 127.0.0.1 --port 8000
    User=fail2ban-api
    Group=fail2ban-api
    WorkingDirectory=/path/to/your/app
