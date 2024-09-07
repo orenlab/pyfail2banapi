@@ -1,6 +1,7 @@
 import logging
 
 from fastapi import FastAPI, HTTPException
+from pydantic import ValidationError
 
 from pyfail2banapi.fail2ban_client import get_fail2ban_status, get_jail_status, get_fail2ban_version, \
     validate_jail_name, parse_jail_status
@@ -62,8 +63,8 @@ async def fetch_jail_status(jail_name: str):
             parsed_status = parse_jail_status(status, jail_name)
             return parsed_status
         raise HTTPException(status_code=500, detail=f"Failed to retrieve status for jail {jail_name}")
-    except Exception as e:
-        logger.error(f"Validation error: {e}")
+    except (ValueError, ValidationError) as e:
+        logger.error(f"Parsing or validation error: {e}")
         raise HTTPException(status_code=500, detail="Data validation error")
 
 

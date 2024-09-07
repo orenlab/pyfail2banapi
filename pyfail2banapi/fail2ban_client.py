@@ -55,19 +55,24 @@ def parse_jail_status(status: str, jail_name: str) -> JailStatus:
     """
     lines = status.split('\n')
 
-    # Extract relevant parts using simple string methods
-    filter_lines = lines[1:4]
-    actions_lines = lines[5:]
+    if len(lines) < 6:
+        raise ValueError("The status output is incomplete or malformed.")
 
-    # Parse filter details
-    currently_failed = int(filter_lines[1].split(':')[1].strip())
-    total_failed = int(filter_lines[2].split(':')[1].strip())
-    file_list = filter_lines[3].split(':')[1].strip()
+    # Extract filter details
+    try:
+        currently_failed = int(lines[1].split(':')[1].strip())
+        total_failed = int(lines[2].split(':')[1].strip())
+        file_list = lines[3].split(':')[1].strip()
+    except (IndexError, ValueError) as e:
+        raise ValueError(f"Error parsing filter details: {e}")
 
-    # Parse actions details
-    currently_banned = int(actions_lines[1].split(':')[1].strip())
-    total_banned = int(actions_lines[2].split(':')[1].strip())
-    banned_ip_list = actions_lines[3].split(':')[1].strip().split() if len(actions_lines) > 3 else []
+    # Extract actions details
+    try:
+        currently_banned = int(lines[5].split(':')[1].strip())
+        total_banned = int(lines[6].split(':')[1].strip())
+        banned_ip_list = lines[7].split(':')[1].strip().split() if len(lines) > 7 else []
+    except (IndexError, ValueError) as e:
+        raise ValueError(f"Error parsing actions details: {e}")
 
     # Create Pydantic models
     filter_data = JailStatusFilter(
