@@ -2,6 +2,8 @@ import logging
 import subprocess
 from typing import Optional
 
+from pyfail2banapi.models import JailStatus, JailStatusActions, JailStatusFilter
+
 logger = logging.getLogger(__name__)
 
 import re
@@ -38,6 +40,53 @@ def parse_fail2ban_status(status: str) -> Dict[str, any]:
         "number_of_jails": number_of_jails,
         "jail_list": [jail.strip() for jail in jail_list]
     }
+
+
+def parse_jail_status(status: str, jail_name: str) -> JailStatus:
+    """
+    Parse the jail status output from fail2ban-client and convert it to a Pydantic model.
+
+    Args:
+        status (str): The raw status output from fail2ban-client.
+        jail_name (str): The name of the jail.
+
+    Returns:
+        JailStatus: A Pydantic model containing parsed jail status.
+    """
+    lines = status.split('\n')
+
+    # Extract relevant parts using simple string methods
+    filter_lines = lines[1:4]
+    actions_lines = lines[5:]
+
+    # Parse filter details
+    currently_failed = int(filter_lines[1].split(':')[1].strip())
+    total_failed = int(filter_lines[2].split(':')[1].strip())
+    file_list = filter_lines[3].split(':')[1].strip()
+
+    # Parse actions details
+    currently_banned = int(actions_lines[1].split(':')[1].strip())
+    total_banned = int(actions_lines[2].split(':')[1].strip())
+    banned_ip_list = actions_lines[3].split(':')[1].strip().split() if len(actions_lines) > 3 else []
+
+    # Create Pydantic models
+    filter_data = JailStatusFilter(
+        currently_failed=currently_failed,
+        total_failed=total_failed,
+        file_list=file_list
+    )
+
+    actions_data = JailStatusActions(
+        currently_banned=currently_banned,
+        total_banned=total_banned,
+        banned_ip_list=banned_ip_list
+    )
+
+    return JailStatus(
+        jail_name=jail_name,
+        filter=filter_data,
+        actions=actions_data
+    )
 
 
 def validate_jail_name(jail_name: str) -> bool:

@@ -24,3 +24,25 @@ class Fail2BanVersion(BaseModel):
     Pydantic model representing the version of the fail2ban service.
     """
     version: str
+
+
+from pydantic import BaseModel
+from typing import List
+
+
+class JailStatusFilter(BaseModel):
+    currently_failed: int
+    total_failed: int
+    file_list: str
+
+
+class JailStatusActions(BaseModel):
+    currently_banned: int
+    total_banned: int
+    banned_ip_list: List[str]
+
+
+class JailStatus(BaseModel):
+    jail_name: str
+    filter: JailStatusFilter
+    actions: JailStatusActions

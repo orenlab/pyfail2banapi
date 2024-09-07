@@ -2,7 +2,8 @@ import logging
 
 from fastapi import FastAPI, HTTPException
 
-from pyfail2banapi.fail2ban_client import get_fail2ban_status, get_jail_status, get_fail2ban_version, validate_jail_name
+from pyfail2banapi.fail2ban_client import get_fail2ban_status, get_jail_status, get_fail2ban_version, \
+    validate_jail_name, parse_jail_status
 from pyfail2banapi.models import Fail2BanStatus, JailStatus, Fail2BanVersion
 
 app = FastAPI(
@@ -49,7 +50,7 @@ async def fetch_jail_status(jail_name: str):
         JailStatus: The status of the specified jail.
 
     Raises:
-        HTTPException: If jail status cannot be retrieved or invalid jail name provided.
+        HTTPException: If jail status cannot be retrieved.
     """
     if not validate_jail_name(jail_name):
         logger.error(f"Invalid jail name provided: {jail_name}")
@@ -58,11 +59,12 @@ async def fetch_jail_status(jail_name: str):
     try:
         status = get_jail_status(jail_name)
         if status:
-            return JailStatus(jail_name=jail_name, status=status)
+            parsed_status = parse_jail_status(status, jail_name)
+            return parsed_status
         raise HTTPException(status_code=500, detail=f"Failed to retrieve status for jail {jail_name}")
     except Exception as e:
-        logger.error(f"Error retrieving status for jail {jail_name}: {e}")
-        raise HTTPException(status_code=500, detail="Internal server error")
+        logger.error(f"Validation error: {e}")
+        raise HTTPException(status_code=500, detail="Data validation error")
 
 
 @app.get("/version", response_model=Fail2BanVersion)
