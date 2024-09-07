@@ -2,7 +2,7 @@
 
 ## Overview
 
-The Fail2Ban API is a robust and efficient FastAPI application designed to interact with Fail2Ban statistics. It
+The Python Fail2Ban API is a robust and efficient FastAPI application designed to interact with Fail2Ban statistics. It
 provides endpoints to retrieve real-time data on Fail2Ban's overall status, the status of specific jails, and the
 Fail2Ban version. This API is particularly well-suited for integration with automation tools and bots, such as Telegram
 bots, enabling seamless monitoring and reporting of security metrics.

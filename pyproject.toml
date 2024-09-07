@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "pyfail2banapi"
-version = "1.0.0"
-description = "A Python API for interacting with fail2ban statistics via FastAPI and Pydantic models."
+version = "0.1.0"
+description = "The Python Fail2Ban API is a robust and efficient FastAPI application designed to interact with Fail2Ban statistics"
 authors = ["Denis Rozhnovskiy <pytelemonbot@mail.ru>"]
 license = "MIT"
 readme = "README.md"
