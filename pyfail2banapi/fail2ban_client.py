@@ -52,25 +52,41 @@ def parse_jail_status(status: str, jail_name: str) -> JailStatus:
 
     Returns:
         JailStatus: A Pydantic model containing parsed jail status.
+
+    Raises:
+        ValueError: If the status output is incomplete or malformed.
     """
     lines = status.split('\n')
 
     if len(lines) < 6:
         raise ValueError("The status output is incomplete or malformed.")
 
+    # Initialize default values
+    currently_failed = total_failed = currently_banned = total_banned = 0
+    file_list = ''
+    banned_ip_list = []
+
     # Extract filter details
     try:
-        currently_failed = int(lines[1].split(':')[1].strip())
-        total_failed = int(lines[2].split(':')[1].strip())
-        file_list = lines[3].split(':')[1].strip()
+        for line in lines:
+            if 'Currently failed:' in line:
+                currently_failed = int(line.split(':')[1].strip())
+            elif 'Total failed:' in line:
+                total_failed = int(line.split(':')[1].strip())
+            elif 'File list:' in line:
+                file_list = line.split(':')[1].strip()
     except (IndexError, ValueError) as e:
         raise ValueError(f"Error parsing filter details: {e}")
 
     # Extract actions details
     try:
-        currently_banned = int(lines[5].split(':')[1].strip())
-        total_banned = int(lines[6].split(':')[1].strip())
-        banned_ip_list = lines[7].split(':')[1].strip().split() if len(lines) > 7 else []
+        for line in lines:
+            if 'Currently banned:' in line:
+                currently_banned = int(line.split(':')[1].strip())
+            elif 'Total banned:' in line:
+                total_banned = int(line.split(':')[1].strip())
+            elif 'Banned IP list:' in line:
+                banned_ip_list = line.split(':')[1].strip().split()
     except (IndexError, ValueError) as e:
         raise ValueError(f"Error parsing actions details: {e}")
 
