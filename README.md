@@ -2,66 +2,65 @@
 
 ## Overview
 
-The Python Fail2Ban API is a robust and efficient FastAPI application designed to interact with Fail2Ban statistics. It
-provides endpoints to retrieve real-time data on Fail2Ban's overall status, the status of specific jails, and the
-Fail2Ban version. This API is particularly well-suited for integration with automation tools and bots, such as Telegram
-bots, enabling seamless monitoring and reporting of security metrics.
+The Python Fail2Ban API is a FastAPI-based application designed to interact with Fail2Ban statistics. It provides
+RESTful endpoints to retrieve Fail2Ban’s overall status, individual jail status, and version information, making it
+ideal for integrating with automation systems like bots.
 
 ## Features
 
-- **Retrieve Overall Status**: Access the current status of the Fail2Ban service.
-- **Query Jail Status**: Get the status of individual jails within Fail2Ban.
-- **Fetch Version Information**: Obtain the version of the Fail2Ban service installed.
+- **Fail2Ban Status**: Retrieve real-time service status.
+- **Jail Status**: Query the status of individual jails.
+- **Version Information**: Fetch the installed Fail2Ban version.
 
 ## Installation
 
 ### Prerequisites
 
-- Python 3.12+
-- Uvicorn for serving the FastAPI application
-- Fail2Ban installed on your system
+- **Python**: Version 3.10 or higher
+- **Poetry**: For managing dependencies and the virtual environment
+- **Fail2Ban**: Installed on your system
 
-### Setup Steps
+### Setup Instructions
 
-1. **Create a Virtual Environment**
+1. **Clone the Repository**
 
-   It's a best practice to use a virtual environment to manage project dependencies. Create and activate a virtual
-   environment:
-
-   ```bash
-   python -m venv venv
-   source venv/bin/activate  # On Windows use `venv\Scripts\activate`
-   ```
-
-2. **Install Dependencies**
-
-   Install the necessary Python packages, including the `pyfail2banapi` package:
+   First, clone the repository as the root user:
 
    ```bash
-   poetry add pyfail2banapi --without dev
+   sudo -i
+   cd /root
+   git clone https://github.com/orenlab/pyfail2banapi.git
    ```
 
-3. **Create a Non-Privileged User and Group**
+2. **Set Up Poetry Virtual Environment**
 
-   To run the service securely, create a non-privileged user and group:
+   Navigate to the project directory and set up the environment using Poetry:
 
    ```bash
-   sudo groupadd fail2ban-api
-   sudo useradd -g fail2ban-api -m -s /bin/false fail2ban-api
+   cd /root/pyfail2banapi
+   poetry install
    ```
 
-4. **Adjust File Permissions**
+3. **Activate the Virtual Environment**
 
-   Ensure that the application directory is owned by the `fail2ban-api` user:
+   Activate the environment using Poetry to run the API within the virtual environment:
 
    ```bash
-   sudo chown -R fail2ban-api:fail2ban-api /path/to/your/app
-   sudo chmod -R 750 /path/to/your/app
+   poetry shell
    ```
 
-5. **Create the Systemd Service File**
+4. **Run the Application**
 
-   Set up a systemd service file at `/etc/systemd/system/fail2ban-api.service`:
+   Start the FastAPI application using Poetry:
+
+   ```bash
+   poetry run uvicorn pyfail2banapi.app:app --host 127.0.0.1 --port 8000
+   ```
+
+5. **Systemd Service Configuration**
+
+   To run the API as a service from `/root/pyfail2banapi/app.py`, create a systemd service file at
+   `/etc/systemd/system/fail2ban-api.service`:
 
    ```ini
    [Unit]
@@ -69,11 +68,10 @@ bots, enabling seamless monitoring and reporting of security metrics.
    After=network.target
 
    [Service]
-   ExecStart=/path/to/your/venv/bin/uvicorn pyfail2banapi.app:app --host 127.0.0.1 --port 8000
-   User=fail2ban-api
-   Group=fail2ban-api
-   WorkingDirectory=/path/to/your/app
-   Environment=PATH=/path/to/your/venv/bin:/usr/bin:/bin
+   ExecStart=/root/.venv/bin/uvicorn pyfail2banapi.app:app --host 127.0.0.1 --port 8000
+   User=root
+   Group=root
+   WorkingDirectory=/root/pyfail2banapi
    Restart=always
    RestartSec=5
    LimitNOFILE=4096
@@ -83,9 +81,9 @@ bots, enabling seamless monitoring and reporting of security metrics.
    WantedBy=multi-user.target
    ```
 
-6. **Reload Systemd and Start the Service**
+6. **Reload and Start the Service**
 
-   Reload systemd to apply changes and start the service:
+   Reload systemd and start the service:
 
    ```bash
    sudo systemctl daemon-reload
@@ -95,29 +93,30 @@ bots, enabling seamless monitoring and reporting of security metrics.
 
 ## Usage
 
-The API is available at `http://localhost:8000` and provides the following endpoints:
+Once the service is running, the API will be available at `http://127.0.0.1:8000`.
 
-- **GET /status**: Retrieves the overall status of Fail2Ban.
-- **GET /status/{jail_name}**: Retrieves the status of a specific jail.
-- **GET /version**: Retrieves the version of Fail2Ban.
+### Available Endpoints:
 
-This API can be integrated with bots, such as Telegram bots, to automate the monitoring and reporting of Fail2Ban status
-and statistics.
+- **GET /status**: Get the overall Fail2Ban status.
+- **GET /status/{jail_name}**: Get the status of a specific jail.
+- **GET /version**: Retrieve the Fail2Ban version.
 
-## Security
+## Security Best Practices
 
-- The API runs as a non-privileged user (`fail2ban-api`), enhancing system security.
-- Ensure that Fail2Ban is properly configured and that access is restricted as needed.
+- Run the service in a secure, isolated environment.
+- Use HTTPS when deploying in production environments.
+- Ensure Fail2Ban is configured properly and restrict access to the API.
 
-## Troubleshooting
+## Contribution
 
-- Check the status of the service with: `sudo systemctl status fail2ban-api.service`.
-- View logs for troubleshooting: `journalctl -u fail2ban-api.service`.
+Contributions are welcome! See the [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines on how to contribute to this
+project.
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
 
-## Contributions
+## Troubleshooting
 
-Contributions are welcome. Please submit issues and pull requests through the GitHub repository.
+- To check service status: `sudo systemctl status fail2ban-api.service`
+- To view logs: `journalctl -u fail2ban-api.service`
