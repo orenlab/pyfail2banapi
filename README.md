@@ -38,7 +38,7 @@ bots, enabling seamless monitoring and reporting of security metrics.
    Install the necessary Python packages, including the `pyfail2banapi` package:
 
    ```bash
-   pip install fastapi uvicorn pydantic pyfail2banapi
+   poetry add pyfail2banapi --without dev
    ```
 
 3. **Create a Non-Privileged User and Group**
