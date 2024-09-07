@@ -1,12 +1,14 @@
 import logging
-import re
 import subprocess
 from typing import Optional
 
 logger = logging.getLogger(__name__)
 
+import re
+from typing import Dict
 
-def parse_fail2ban_status(status: str) -> dict:
+
+def parse_fail2ban_status(status: str) -> Dict[str, any]:
     """
     Parse the status output from fail2ban-client and convert it to a JSON-compatible dictionary.
 
@@ -21,15 +23,20 @@ def parse_fail2ban_status(status: str) -> dict:
     jail_list_line = lines[2].strip()
 
     # Extract the number of jails
-    number_of_jails = int(jail_number_line.split(':')[1].strip())
+    number_of_jails_match = re.search(r'Number of jail:\s*(\d+)', jail_number_line)
+    if not number_of_jails_match:
+        raise ValueError("Failed to parse number of jails")
+    number_of_jails = int(number_of_jails_match.group(1))
 
     # Extract the list of jails
-    jail_list = jail_list_line.split(':')[1].strip()
-    jails = [jail.strip() for jail in jail_list.split(',')]
+    jail_list_match = re.search(r'Jail list:\s*(.*)', jail_list_line)
+    if not jail_list_match:
+        raise ValueError("Failed to parse jail list")
+    jail_list = jail_list_match.group(1).split(',')
 
     return {
         "number_of_jails": number_of_jails,
-        "jail_list": jails
+        "jail_list": [jail.strip() for jail in jail_list]
     }
 
 
@@ -58,12 +65,12 @@ def handle_subprocess_error(e: subprocess.CalledProcessError, command: str) -> N
     logger.error(f"Command '{command}' failed with exit code {e.returncode}: {e.stderr.strip()}")
 
 
-def get_fail2ban_status() -> dict | None:
+def get_fail2ban_status() -> Dict[str, any] | None:
     """
     Retrieve the overall status of the fail2ban service by executing the 'fail2ban-client status' command.
 
     Returns:
-        dict | None: The status output from the fail2ban client formatted as a JSON-compatible dictionary, or None if the command fails.
+        dict | None: The parsed status data or None if the command fails.
     """
     try:
         result = subprocess.run(
@@ -72,7 +79,7 @@ def get_fail2ban_status() -> dict | None:
             text=True,
             check=True
         )
-        return parse_fail2ban_status(result.stdout.strip())
+        return parse_fail2ban_status(result.stdout)
     except FileNotFoundError:
         logger.error("fail2ban-client command not found. Please ensure Fail2Ban is installed.")
     except subprocess.CalledProcessError as e:

@@ -30,11 +30,11 @@ async def fetch_fail2ban_status():
     try:
         status = get_fail2ban_status()
         if status:
-            return Fail2BanStatus(status=status)
+            return Fail2BanStatus(**status)
         raise HTTPException(status_code=500, detail="Failed to retrieve fail2ban status")
     except Exception as e:
-        logger.error(f"Error retrieving Fail2Ban status: {e}")
-        raise HTTPException(status_code=500, detail="Internal server error")
+        logger.error(f"Validation error: {e}")
+        raise HTTPException(status_code=500, detail="Data validation error")
 
 
 @app.get("/status/{jail_name}", response_model=JailStatus)
