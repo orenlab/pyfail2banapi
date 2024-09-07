@@ -6,6 +6,33 @@ from typing import Optional
 logger = logging.getLogger(__name__)
 
 
+def parse_fail2ban_status(status: str) -> dict:
+    """
+    Parse the status output from fail2ban-client and convert it to a JSON-compatible dictionary.
+
+    Args:
+        status (str): The raw status output from fail2ban-client.
+
+    Returns:
+        dict: A dictionary containing parsed Fail2Ban status.
+    """
+    lines = status.split('\n')
+    jail_number_line = lines[1].strip()
+    jail_list_line = lines[2].strip()
+
+    # Extract the number of jails
+    number_of_jails = int(jail_number_line.split(':')[1].strip())
+
+    # Extract the list of jails
+    jail_list = jail_list_line.split(':')[1].strip()
+    jails = [jail.strip() for jail in jail_list.split(',')]
+
+    return {
+        "number_of_jails": number_of_jails,
+        "jail_list": jails
+    }
+
+
 def validate_jail_name(jail_name: str) -> bool:
     """
     Validate the jail name to ensure it contains only safe characters.
@@ -31,26 +58,25 @@ def handle_subprocess_error(e: subprocess.CalledProcessError, command: str) -> N
     logger.error(f"Command '{command}' failed with exit code {e.returncode}: {e.stderr.strip()}")
 
 
-def get_fail2ban_status() -> Optional[str]:
+def get_fail2ban_status() -> dict | None:
     """
     Retrieve the overall status of the fail2ban service by executing the 'fail2ban-client status' command.
 
     Returns:
-        Optional[str]: The status output from the fail2ban client or None if the command fails.
+        dict | None: The status output from the fail2ban client formatted as a JSON-compatible dictionary, or None if the command fails.
     """
-    command = 'fail2ban-client status'
     try:
         result = subprocess.run(
-            command.split(),
+            ['fail2ban-client', 'status'],
             capture_output=True,
             text=True,
             check=True
         )
-        return result.stdout.strip()
+        return parse_fail2ban_status(result.stdout.strip())
     except FileNotFoundError:
         logger.error("fail2ban-client command not found. Please ensure Fail2Ban is installed.")
     except subprocess.CalledProcessError as e:
-        handle_subprocess_error(e, command)
+        logger.error(f"fail2ban-client command failed: {e.stderr.strip()}")
     except Exception as e:
         logger.error(f"Error retrieving fail2ban status: {e}")
     return None
