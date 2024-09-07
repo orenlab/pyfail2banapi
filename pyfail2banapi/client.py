@@ -33,7 +33,7 @@ from typing import Optional
 from pyfail2banapi.logger_config import setup_logger
 from pyfail2banapi.parsers import parse_fail2ban_status, validate_jail_name
 
-logger = setup_logger(__name__, logging.INFO)
+logger = setup_logger("fail2ban_api", logging.INFO, "/var/log/fail2ban_api.log")
 
 
 def handle_subprocess_error(e: subprocess.CalledProcessError, command: str) -> None:
