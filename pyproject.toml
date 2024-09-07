@@ -20,7 +20,7 @@ classifiers = [
 ]
 
 [tool.poetry.dependencies]
-python = "^3.12"
+python = "^3.10"
 fastapi = "^0.114.0"
 pydantic = "^2.9.0"
 # Add other core dependencies for the API here.
